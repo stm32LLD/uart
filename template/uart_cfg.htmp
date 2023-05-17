@@ -1,0 +1,128 @@
+// Copyright (c) 2023  Ziga Miklosic
+// All Rights Reserved
+////////////////////////////////////////////////////////////////////////////////
+/**
+*@file      uart_cfg.h
+*@brief     Configuration for UART LL drivers based on STM32 HAL library
+*@author    Ziga Miklosic
+*@email		ziga.miklosic@gmail.si
+*@date      21.04.2023
+*@version   V0.1.0
+*/
+////////////////////////////////////////////////////////////////////////////////
+/**
+*@addtogroup UART_CFG_API
+* @{ <!-- BEGIN GROUP -->
+*
+*/
+////////////////////////////////////////////////////////////////////////////////
+
+#ifndef __UART_CFG_H
+#define __UART_CFG_H
+
+////////////////////////////////////////////////////////////////////////////////
+// Includes
+////////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+// USER INCLUDE BEGIN...
+
+#include "stm32l4xx_hal.h"
+#include "config/proj_cfg.h"
+
+// USER INCLUDE END...
+
+////////////////////////////////////////////////////////////////////////////////
+// Definitions
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *      Maximum Transmission Unit - MTU
+ *
+ *  Unit: byte
+ */
+#define UART_CFG_MTU                            ( 256 )
+
+/**
+ *  Enable/Disable assertions
+ */
+#define UART_CFG_ASSERT_EN                       ( 1 )
+
+// USER CODE END...
+
+// Disable asserts in releases
+#ifndef DEBUG
+    #undef UART_CFG_ASSERT_EN
+    #define UART_CFG_ASSERT_EN 0
+#endif
+
+/**
+ *  Assert definition
+ */
+#if ( 1 == UART_CFG_ASSERT_EN )
+    // USER CODE BEGIN...
+    #define UART_ASSERT(x)                       PROJ_CFG_ASSERT(x)
+    // USER CODE END...
+#else
+    #define UART_ASSERT(x)                       { ; }
+#endif
+
+
+/**
+ *  UART Communication Channels
+ *
+ *  @note   Must start with enumeration of 0!
+ */
+typedef enum
+{
+    // USER CODE BEGIN...
+
+    eUART_4 = 0,
+    eUART_5,
+
+    // USER CODE END...
+
+    eUART_CH_NUM_OF     /**<Number of all UART channels */
+} uart_ch_t;
+
+/**
+ *  UART pins configuration structure
+ */
+typedef struct
+{
+    GPIO_TypeDef *    p_port;       /**<Port */
+    uint32_t          pin;          /**<Pin */
+    uint32_t          pull;         /**<Pull device mode */
+    uint32_t          af;           /**<Alternative function */
+} uart_pin_cfg_t;
+
+/**
+ *  UART configuration structure
+ */
+typedef struct
+{
+    USART_TypeDef *     p_instance;     /**<UART instance */
+    uint32_t            baudrate;       /**<Baudrate */
+    uint16_t            tx_buf_size;    /**<Transmission buffer size in bytes */
+    uint16_t            rx_buf_size;    /**<Reception buffer size in bytes */
+    uart_pin_cfg_t      tx_pin;         /**<Tx pin config */
+    uart_pin_cfg_t      rx_pin;         /**<Rx pin config */
+    uint32_t            irq_prio;       /**<Interrupt priority */
+    IRQn_Type           irq_num;        /**<Interrupt number */
+} uart_cfg_t;
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Functions
+////////////////////////////////////////////////////////////////////////////////
+uart_cfg_t * uart_cfg_get_config(const uart_ch_t uart_ch);
+
+#endif // __UART_CFG_H
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+* @} <!-- END GROUP -->
+*/
+////////////////////////////////////////////////////////////////////////////////

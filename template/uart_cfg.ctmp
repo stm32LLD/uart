@@ -1,0 +1,143 @@
+// Copyright (c) 2023 Ziga Miklosic
+// All Rights Reserved
+////////////////////////////////////////////////////////////////////////////////
+/**
+*@file      uart_cfg.c
+*@brief     Configuration for UART LL drivers based on STM32 HAL library
+*@author    Ziga Miklosic
+*@email     ziga.miklosic@gmail.si
+*@date      21.04.2023
+*@version   V0.1.0
+*/
+////////////////////////////////////////////////////////////////////////////////
+/*!
+* @addtogroup UART_CFG
+* @{ <!-- BEGIN GROUP -->
+*/
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// Includes
+////////////////////////////////////////////////////////////////////////////////
+#include <stdlib.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#include "uart_cfg.h"
+
+// USER INCLUDE BEGIN...
+
+#include "config/proj_cfg.h"
+#include "config/pin_mapper.h"
+
+// USER INCLUDE END...
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Definitions
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+// Variables
+////////////////////////////////////////////////////////////////////////////////
+
+/**
+ *      UART Channel Configuration
+ */
+static const uart_cfg_t g_uart_cfg[eUART_CH_NUM_OF] =
+{
+    // USER CODE BEGIN...
+
+    // =============================================================
+    //      UART 4 Settings
+    // =============================================================
+    [eUART_4] =
+    {
+        .p_instance     = UART4,
+        .baudrate       = 115200U,
+        .rx_buf_size    = 512U,
+        .tx_buf_size    = 512U,
+        .tx_pin =
+        {
+            .p_port = TX4_WIFI__PORT,
+            .pin    = TX4_WIFI__PIN,
+            .pull   = TX4_WIFI__PULL,
+            .af     = TX4_WIFI__AF
+        },
+        .rx_pin =
+        {
+            .p_port = RX4_WIFI__PORT,
+            .pin    = RX4_WIFI__PIN,
+            .pull   = RX4_WIFI__PULL,
+            .af     = RX4_WIFI__AF
+        },
+        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART4,
+        .irq_num    = UART4_IRQn,
+    },
+
+    // =============================================================
+    //      UART 5 Settings
+    // =============================================================
+    [eUART_5] =
+    {
+        .p_instance     = UART5,
+        .baudrate       = 115200U,
+        .rx_buf_size    = 512U,
+        .tx_buf_size    = 512U,
+        .tx_pin =
+        {
+            .p_port = TX5_BLE__PORT,
+            .pin    = TX5_BLE__PIN,
+            .pull   = TX5_BLE__PULL,
+            .af     = TX5_BLE__AF
+        },
+        .rx_pin =
+        {
+            .p_port = RX5_BLE__PORT,
+            .pin    = RX5_BLE__PIN,
+            .pull   = RX5_BLE__PULL,
+            .af     = RX5_BLE__AF
+        },
+        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART5,
+        .irq_num    = UART5_IRQn,
+    },
+
+    // USER CODE END...
+};
+
+////////////////////////////////////////////////////////////////////////////////
+// Functions
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+* @} <!-- END GROUP -->
+*/
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*@addtogroup UART_CFG_API
+* @{ <!-- BEGIN GROUP -->
+*
+* 	Following function are part of UART Configuration API.
+*/
+////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+*       Get UART configurations
+*
+* @return       &g_uart_cfg - Address to UART config table
+*/
+////////////////////////////////////////////////////////////////////////////////
+uart_cfg_t * uart_cfg_get_config(const uart_ch_t uart_ch)
+{
+    return (uart_cfg_t*) &g_uart_cfg[uart_ch];
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/**
+* @} <!-- END GROUP -->
+*/
+////////////////////////////////////////////////////////////////////////////////
