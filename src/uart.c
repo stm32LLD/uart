@@ -661,6 +661,9 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
             &&  ( NULL != p_data )
             &&  ( size <= UART_CFG_MTU ))
         {
+            // Enter critical
+            __disable_irq();
+
             // Check if there is space in Tx FIFO
             (void) ring_buffer_get_free( g_uart[uart_ch].tx_buf, &buf_free_space );
 
@@ -683,6 +686,9 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
             {
                 status = eUART_WAR_FULL;
             }
+
+            // Exit critical
+            __enable_irq();
         }
         else
         {
