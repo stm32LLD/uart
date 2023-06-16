@@ -327,8 +327,35 @@ static inline void uart_process_isr(const USART_TypeDef * p_inst)
     // Find UART channel by hardware instance
     if ( true == uart_find_channel( p_inst, &uart_ch ))
     {
+        // UART overrun error
+        if ( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_ORE ))
+        {
+            __HAL_UART_CLEAR_FLAG( &g_uart[uart_ch].handle, UART_FLAG_ORE );
+
+            // Discard received character
+            (void) g_uart[uart_ch].handle.Instance->RDR;
+        }
+
+        // Framing error
+        else if ( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_FE ))
+        {
+            __HAL_UART_CLEAR_FLAG( &g_uart[uart_ch].handle, UART_FLAG_FE );
+
+            // Discard received character
+            (void) g_uart[uart_ch].handle.Instance->RDR;
+        }
+
+        // Noise error
+        else if ( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_NE ))
+        {
+            __HAL_UART_CLEAR_FLAG( &g_uart[uart_ch].handle, UART_FLAG_NE );
+
+            // Discard received character
+            (void) g_uart[uart_ch].handle.Instance->RDR;
+        }
+
         // UART read data register not empty
-        if( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_RXNE ))
+        else if( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_RXNE ))
         {
             // Get received character
             u8_data = g_uart[uart_ch].handle.Instance->RDR;
@@ -351,12 +378,6 @@ static inline void uart_process_isr(const USART_TypeDef * p_inst)
             {
                 __HAL_UART_DISABLE_IT( &g_uart[uart_ch].handle, UART_IT_TXE );
             }
-        }
-
-        // UART overrun error
-        else if ( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_ORE ))
-        {
-            __HAL_UART_CLEAR_FLAG( &g_uart[uart_ch].handle, UART_FLAG_ORE );
         }
 
         else
@@ -533,6 +554,9 @@ uart_status_t uart_init(const uart_ch_t uart_ch)
             {
                 // Enable reception buffer not empty interrupt
                 __HAL_UART_ENABLE_IT( &g_uart[uart_ch].handle, UART_IT_RXNE );
+
+                // Error interrupt (frame error, noise error, overrun error)
+                 __HAL_UART_ENABLE_IT( &g_uart[uart_ch].handle, UART_IT_ERR );
 
                 // Setup UART interrupt priority and enable it
                 NVIC_SetPriority( p_uart_cfg->irq_num, p_uart_cfg->irq_prio );
