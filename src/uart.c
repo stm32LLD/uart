@@ -732,7 +732,7 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
 * @brief        Received data over UART
 *
 * @note     This function is non-blocking!
-* @note     Function returns "eUSBD_WAR_EMPTY" when Rx FIFO is empty.
+* @note     Function returns "eUART_WAR_EMPTY" when Rx FIFO is empty.
 *
 * @param[in]    uart_ch     - UART communication channel
 * @param[out]   p_data      - Pointer to data to send
