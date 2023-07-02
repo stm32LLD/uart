@@ -18,7 +18,7 @@ root/middleware/ring_buffer/src/ring_buffer.h
 ```
 
 ### **2. GPIO STM32 LL Driver**
-STM32 UART LL driver module needs [GPIO](add link) C module in order to initialize UART pins clock.
+STM32 UART LL driver module needs [GPIO](https://github.com/stm32LLD/gpio) C module in order to initialize UART pins clock.
 
 It is mandatory to be under following path in order to be compatible "General Embedded C Libraries Ecosystem":
 ```
