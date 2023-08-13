@@ -772,6 +772,82 @@ uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+/*!
+* @brief        Clear all content in RX FIFO
+*
+* @param[in]    uart_ch     - UART communication channel
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+uart_status_t uart_clear_rx_buf(const uart_ch_t uart_ch)
+{
+    uart_status_t status = eUART_OK;
+
+    UART_ASSERT( uart_ch < eUART_CH_NUM_OF );
+    UART_ASSERT( true == g_uart[uart_ch].is_init );
+
+    if ( uart_ch < eUART_CH_NUM_OF )
+    {
+        if ( true == g_uart[uart_ch].is_init )
+        {
+            // Reset/Clear RX FIFO
+            if ( eRING_BUFFER_OK != ring_buffer_reset( g_uart[uart_ch].rx_buf ))
+            {
+                status = eUART_ERROR;
+            }
+        }
+        else
+        {
+            status = eUART_ERROR;
+        }
+    }
+    else
+    {
+        status = eUART_ERROR;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*!
+* @brief        Clear all content in TX FIFO
+*
+* @param[in]    uart_ch     - UART communication channel
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+uart_status_t uart_clear_tx_buf(const uart_ch_t uart_ch)
+{
+    uart_status_t status = eUART_OK;
+
+    UART_ASSERT( uart_ch < eUART_CH_NUM_OF );
+    UART_ASSERT( true == g_uart[uart_ch].is_init );
+
+    if ( uart_ch < eUART_CH_NUM_OF )
+    {
+        if ( true == g_uart[uart_ch].is_init )
+        {
+            // Reset/Clear RX FIFO
+            if ( eRING_BUFFER_OK != ring_buffer_reset( g_uart[uart_ch].tx_buf ))
+            {
+                status = eUART_ERROR;
+            }
+        }
+        else
+        {
+            status = eUART_ERROR;
+        }
+    }
+    else
+    {
+        status = eUART_ERROR;
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 /**
 * @} <!-- END GROUP -->
 */
