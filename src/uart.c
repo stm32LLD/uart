@@ -40,10 +40,9 @@
 /**
  *  Compatibility check with RING_BUFFER
  *
- *  Support version V2.0.x
+ *  Support version V2.x.x
  */
 _Static_assert( 2 == RING_BUFFER_VER_MAJOR );
-_Static_assert( 0 >= RING_BUFFER_VER_MINOR );
 
 /**
  *  UART control
