@@ -49,57 +49,59 @@ static const uart_cfg_t g_uart_cfg[eUART_CH_NUM_OF] =
     // USER CODE BEGIN...
 
     // =============================================================
-    //      UART 4 Settings
+    //      Debug UART Settings
     // =============================================================
-    [eUART_4] =
+    [eUART_DBG] =
     {
-        .p_instance     = UART4,
+        .p_instance     = USART3,
         .baudrate       = 115200U,
         .rx_buf_size    = 512U,
-        .tx_buf_size    = 512U,
+        .tx_buf_size    = 1024U,
         .tx_pin =
         {
-            .p_port = TX4_WIFI__PORT,
-            .pin    = TX4_WIFI__PIN,
-            .pull   = TX4_WIFI__PULL,
-            .af     = TX4_WIFI__AF
+            .p_port = DEBUG_UART_TX__PORT,
+            .pin    = DEBUG_UART_TX__PIN,
+            .pull   = DEBUG_UART_TX__PULL,
+            .af     = DEBUG_UART_TX__AF
         },
         .rx_pin =
         {
-            .p_port = RX4_WIFI__PORT,
-            .pin    = RX4_WIFI__PIN,
-            .pull   = RX4_WIFI__PULL,
-            .af     = RX4_WIFI__AF
+            .p_port = DEBUG_UART_RX__PORT,
+            .pin    = DEBUG_UART_RX__PIN,
+            .pull   = DEBUG_UART_RX__PULL,
+            .af     = DEBUG_UART_RX__AF
         },
-        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART4,
-        .irq_num    = UART4_IRQn,
+        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART_DBG,
+        .irq_num    = USART3_IRQn,
+        .swap_txrx  = true,                         // NOTE: Due to HW bug!
     },
 
     // =============================================================
-    //      UART 5 Settings
+    //      Cooling unit UART Settings
     // =============================================================
-    [eUART_5] =
+    [eUART_COOLING] =
     {
-        .p_instance     = UART5,
+        .p_instance     = USART1,
         .baudrate       = 115200U,
         .rx_buf_size    = 512U,
-        .tx_buf_size    = 512U,
+        .tx_buf_size    = 1024U,
         .tx_pin =
         {
-            .p_port = TX5_BLE__PORT,
-            .pin    = TX5_BLE__PIN,
-            .pull   = TX5_BLE__PULL,
-            .af     = TX5_BLE__AF
+            .p_port = COOLING_RS485_TX__PORT,
+            .pin    = COOLING_RS485_TX__PIN,
+            .pull   = COOLING_RS485_TX__PULL,
+            .af     = COOLING_RS485_TX__AF
         },
         .rx_pin =
         {
-            .p_port = RX5_BLE__PORT,
-            .pin    = RX5_BLE__PIN,
-            .pull   = RX5_BLE__PULL,
-            .af     = RX5_BLE__AF
+            .p_port = COOLING_RS485_RX__PORT,
+            .pin    = COOLING_RS485_RX__PIN,
+            .pull   = COOLING_RS485_RX__PULL,
+            .af     = COOLING_RS485_RX__AF
         },
-        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART5,
-        .irq_num    = UART5_IRQn,
+        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART_COOLING,
+        .irq_num    = USART1_IRQn,
+        .swap_txrx  = true,                      // NOTE: Due to HW bug!
     },
 
     // USER CODE END...

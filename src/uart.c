@@ -541,11 +541,16 @@ uart_status_t uart_init(const uart_ch_t uart_ch)
             g_uart[uart_ch].handle.Init.OverSampling           = UART_OVERSAMPLING_16;
             g_uart[uart_ch].handle.Init.OneBitSampling         = UART_ONE_BIT_SAMPLE_DISABLE;
 
-            // Added due to swapped pins
-            g_uart[uart_ch].handle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
-            g_uart[uart_ch].handle.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
-
-
+            // Check if request for swapping pins
+            if ( true == p_uart_cfg->swap_txrx )
+            {
+                g_uart[uart_ch].handle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_SWAP_INIT;
+                g_uart[uart_ch].handle.AdvancedInit.Swap = UART_ADVFEATURE_SWAP_ENABLE;
+            }
+            else
+            {
+                g_uart[uart_ch].handle.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+            }
 
             // Init uart
             if ( HAL_OK != HAL_UART_Init( &g_uart[uart_ch].handle ))

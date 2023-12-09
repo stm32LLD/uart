@@ -29,7 +29,7 @@
 
 // USER INCLUDE BEGIN...
 
-#include "stm32l4xx_hal.h"
+#include "stm32g4xx_hal.h"
 #include "config/proj_cfg.h"
 
 // USER INCLUDE END...
@@ -79,8 +79,8 @@ typedef enum
 {
     // USER CODE BEGIN...
 
-    eUART_4 = 0,
-    eUART_5,
+    eUART_DBG = 0,      /**<Debug com port */
+    eUART_COOLING,      /**<Cooling unit UART interface */
 
     // USER CODE END...
 
@@ -111,6 +111,7 @@ typedef struct
     uart_pin_cfg_t      rx_pin;         /**<Rx pin config */
     uint32_t            irq_prio;       /**<Interrupt priority */
     IRQn_Type           irq_num;        /**<Interrupt number */
+    bool                swap_txrx;      /**<Swap TX & RX pins. NOTE: Not supported on every uC */
 } uart_cfg_t;
 
 
