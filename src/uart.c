@@ -608,6 +608,18 @@ uart_status_t uart_deinit(const uart_ch_t uart_ch)
             // Get UART configurations
             const uart_cfg_t * p_uart_cfg = uart_cfg_get_config( uart_ch );
 
+            // De-init UART
+            if ( HAL_OK != HAL_UART_DeInit( &g_uart[uart_ch].handle ))
+            {
+                status = eUART_ERROR;
+            }
+
+            // Disable reception buffer not empty interrupt
+            __HAL_UART_DISABLE_IT( &g_uart[uart_ch].handle, UART_IT_RXNE );
+
+            // Disable interrupt (frame error, noise error, overrun error)
+             __HAL_UART_DISABLE_IT( &g_uart[uart_ch].handle, UART_IT_ERR );
+
             // De-init gpios
             uart_deinit_gpio( &( p_uart_cfg->tx_pin ));
             uart_deinit_gpio( &( p_uart_cfg->rx_pin ));
