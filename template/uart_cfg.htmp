@@ -46,6 +46,14 @@
 #define UART_CFG_MTU                            ( 256 )
 
 /**
+ *  Get system timetick in 32-bit unsigned integer form
+ *
+ *  Unit: ms
+ */
+#define UART_GET_SYSTICK()                      ((uint32_t) HAL_GetTick() )
+
+
+/**
  *  Enable/Disable assertions
  */
 #define UART_CFG_ASSERT_EN                       ( 1 )
@@ -80,7 +88,7 @@ typedef enum
     // USER CODE BEGIN...
 
     eUART_DBG = 0,      /**<Debug com port */
-    eUART_COOLING,      /**<Cooling unit UART interface */
+    eUART_RS485,        /**<Communication with master over RS-485 */
 
     // USER CODE END...
 

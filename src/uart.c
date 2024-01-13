@@ -675,6 +675,108 @@ uart_status_t uart_is_init(const uart_ch_t uart_ch, bool * const p_is_init)
 /*!
 * @brief        Transmit data over UART
 *
+* @note     This function is blocking!
+*
+* @param[in]    uart_ch     - UART communication channel
+* @param[in]    p_data      - Pointer to data to send
+* @param[in]    size        - Size of data to send in bytes
+* @param[in]    timeout     - Timeout in miliseconds
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_data, const uint32_t size, const uint32_t timeout)
+{
+    uart_status_t status = eUART_OK;
+
+    // Transmit data
+    status = uart_transmit_it( uart_ch, p_data, size );
+
+    if ( eUART_OK == status )
+    {
+        // Number of bytes in TX FIFO
+        uint32_t tx_cnt = 0U;
+
+        // Get current time
+        const uint32_t now = UART_GET_SYSTICK();
+
+        // Wait for transmission to complete
+        do
+        {
+            // Check for timeout
+            if (((uint32_t) ( UART_GET_SYSTICK() - now )) > timeout )
+            {
+                status = eUART_ERROR_TIMEOUT;
+                break;
+            }
+
+            // Get number of bytes in Tx FIFO
+            ring_buffer_get_taken( g_uart[uart_ch].tx_buf, &tx_cnt );
+
+        } while( tx_cnt > 0U );
+    }
+
+    return status;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+/*!
+* @brief        Received data over UART
+*
+* @note     This function is blocking!
+*
+* @note     If timeout = 0, then this function is effectively non-blocking and
+*           it will return "ERROR_TIMEOUT"!
+*
+* @param[in]    uart_ch     - UART communication channel
+* @param[out]   p_data      - Pointer to data to send
+* @param[in]    size        - Amount of data bytes to be received
+* @param[in]    timeout     - Timeout in miliseconds
+* @return       status      - Status of operation
+*/
+////////////////////////////////////////////////////////////////////////////////
+uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, const uint32_t size, const uint32_t timeout)
+{
+    uart_status_t   status  = eUART_OK;
+    uint32_t        rx_cnt  = 0;
+
+    UART_ASSERT( size > 0U );
+
+    if ( size > 0U )
+    {
+        // Get current time
+        const uint32_t now = UART_GET_SYSTICK();
+
+        // Wait until all requested data are received
+        while( rx_cnt < size )
+        {
+            // Check for timeout
+            if (((uint32_t) ( UART_GET_SYSTICK() - now )) > timeout )
+            {
+                status = eUART_ERROR_TIMEOUT;
+                break;
+            }
+
+            // Byte received?
+            if ( eUART_OK == uart_receive_it( uart_ch, (uint8_t*) &p_data[rx_cnt] ))
+            {
+                // Byte received
+                rx_cnt++;
+            }
+        }
+    }
+    else
+    {
+        status = eUART_ERROR;
+    }
+
+    return status;
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+/*!
+* @brief        Transmit data over UART
+*
 * @note     This function is non-blocking!
 *
 * @note     In case Tx FIFO gets full it returns "eUART_WAR_FULL".
@@ -690,7 +792,7 @@ uart_status_t uart_is_init(const uart_ch_t uart_ch, bool * const p_is_init)
 * @return       status      - Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
-uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_data, const uint32_t size)
+uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_data, const uint32_t size)
 {
     uart_status_t   status          = eUART_OK;
     uint32_t        buf_free_space  = 0U;
@@ -760,7 +862,7 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
 * @return       status      - Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
-uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data)
+uart_status_t uart_receive_it(const uart_ch_t uart_ch, uint8_t * const p_data)
 {
     uart_status_t status = eUART_OK;
 

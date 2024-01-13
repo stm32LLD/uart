@@ -73,35 +73,35 @@ static const uart_cfg_t g_uart_cfg[eUART_CH_NUM_OF] =
         },
         .irq_prio   = PROJ_CFG_IRQ_PRIO_UART_DBG,
         .irq_num    = USART3_IRQn,
-        .swap_txrx  = true,                         // NOTE: Due to HW bug!
+        .swap_txrx  = false,
     },
 
     // =============================================================
-    //      Cooling unit UART Settings
+    //      Communication with master device UART Settings
     // =============================================================
-    [eUART_COOLING] =
+    [eUART_RS485] =
     {
         .p_instance     = USART1,
         .baudrate       = 115200U,
-        .rx_buf_size    = 512U,
-        .tx_buf_size    = 1024U,
+        .rx_buf_size    = 256,
+        .tx_buf_size    = 256U,
         .tx_pin =
         {
-            .p_port = COOLING_RS485_TX__PORT,
-            .pin    = COOLING_RS485_TX__PIN,
-            .pull   = COOLING_RS485_TX__PULL,
-            .af     = COOLING_RS485_TX__AF
+            .p_port = RS485_TX__PORT,
+            .pin    = RS485_TX__PIN,
+            .pull   = RS485_TX__PULL,
+            .af     = RS485_TX__AF
         },
         .rx_pin =
         {
-            .p_port = COOLING_RS485_RX__PORT,
-            .pin    = COOLING_RS485_RX__PIN,
-            .pull   = COOLING_RS485_RX__PULL,
-            .af     = COOLING_RS485_RX__AF
+            .p_port = RS485_RX__PORT,
+            .pin    = RS485_RX__PIN,
+            .pull   = RS485_RX__PULL,
+            .af     = RS485_RX__AF
         },
-        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART_COOLING,
+        .irq_prio   = PROJ_CFG_IRQ_PRIO_UART_MASTER,
         .irq_num    = USART1_IRQn,
-        .swap_txrx  = true,                      // NOTE: Due to HW bug!
+        .swap_txrx  = false,
     },
 
     // USER CODE END...
