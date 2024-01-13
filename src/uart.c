@@ -688,32 +688,34 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
 {
     uart_status_t status = eUART_OK;
 
-    // Transmit data
-    status = uart_transmit_it( uart_ch, p_data, size );
+    UART_ASSERT( uart_ch < eUART_CH_NUM_OF );
+    UART_ASSERT( true == g_uart[uart_ch].is_init );
+    UART_ASSERT( NULL != p_data );
+    UART_ASSERT( size <= UART_CFG_MTU );
 
-    if ( eUART_OK == status )
+    if ( uart_ch < eUART_CH_NUM_OF )
     {
-        // Number of bytes in TX FIFO
-        uint32_t tx_cnt = 0U;
-
-        // Get current time
-        const uint32_t now = UART_GET_SYSTICK();
-
-        // Wait for transmission to complete
-        do
+        if  (   ( true == g_uart[uart_ch].is_init )
+            &&  ( NULL != p_data )
+            &&  ( size <= UART_CFG_MTU ))
         {
-            // Check for timeout
-            if (((uint32_t) ( UART_GET_SYSTICK() - now )) > timeout )
+            if ( HAL_OK != HAL_UART_Transmit( &g_uart[uart_ch].handle, p_data, size, timeout ))
             {
-                status = eUART_ERROR_TIMEOUT;
-                break;
+                status = eUART_ERROR;
             }
-
-            // Get number of bytes in Tx FIFO
-            ring_buffer_get_taken( g_uart[uart_ch].tx_buf, &tx_cnt );
-
-        } while( tx_cnt > 0U );
+        }
+        else
+        {
+            status = eUART_ERROR;
+        }
     }
+    else
+    {
+        status = eUART_ERROR;
+    }
+
+
+
 
     return status;
 }
