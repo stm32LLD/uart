@@ -533,7 +533,7 @@ uart_status_t uart_init(const uart_ch_t uart_ch)
             // Prepare HAL init structure
             g_uart[uart_ch].handle.Instance                    = p_uart_cfg->p_instance;
             g_uart[uart_ch].handle.Init.BaudRate               = p_uart_cfg->baudrate;
-            g_uart[uart_ch].handle.Init.WordLength             = UART_WORDLENGTH_8B;
+            g_uart[uart_ch].handle.Init.WordLength             = p_uart_cfg->bits_per_frame;
             g_uart[uart_ch].handle.Init.StopBits               = UART_STOPBITS_1;
             g_uart[uart_ch].handle.Init.Parity                 = UART_PARITY_NONE;
             g_uart[uart_ch].handle.Init.Mode                   = UART_MODE_TX_RX;
@@ -677,6 +677,10 @@ uart_status_t uart_is_init(const uart_ch_t uart_ch, bool * const p_is_init)
 *
 * @note     This function is blocking!
 *
+* @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
+*         the sent data is handled as a set of u16. In this case, Size must indicate the number
+*         of u16 provided through pData.
+*
 * @param[in]    uart_ch     - UART communication channel
 * @param[in]    p_data      - Pointer to data to send
 * @param[in]    size        - Size of data to send in bytes
@@ -787,6 +791,10 @@ uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, cons
 *           before copy of transmit data takes place. Consequence of that
 *           might be that message will not be transmitted as it currently
 *           cannot be fitted into Tx FIFO.
+*
+* @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
+*         the sent data is handled as a set of u16. In this case, Size must indicate the number
+*         of u16 provided through pData.
 *
 * @param[in]    uart_ch     - UART communication channel
 * @param[in]    p_data      - Pointer to data to send
