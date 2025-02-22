@@ -320,8 +320,9 @@ static inline bool uart_find_channel(const USART_TypeDef * p_inst, uart_ch_t * c
 ////////////////////////////////////////////////////////////////////////////////
 static inline void uart_process_isr(const USART_TypeDef * p_inst)
 {
-    uint8_t     u8_data     = 0U;
-    uart_ch_t  uart_ch    = 0;
+    uint8_t              u8_data    = 0U;
+    uart_ch_t            uart_ch    = 0;
+    ring_buffer_status_t buf_status = eRING_BUFFER_OK;
 
     // Find UART channel by hardware instance
     if ( true == uart_find_channel( p_inst, &uart_ch ))
@@ -356,26 +357,71 @@ static inline void uart_process_isr(const USART_TypeDef * p_inst)
         // UART read data register not empty
         else if( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_RXNE ))
         {
-            // Get received character
-            u8_data = g_uart[uart_ch].handle.Instance->RDR;
+            // 8bit or 7bit per frame
+            if ( UART_WORDLENGTH_9B != g_uart[uart_ch].handle.Init.WordLength )
+            {
+                // Get received character
+                u8_data = g_uart[uart_ch].handle.Instance->RDR;
 
-            // Put to buffer
-            (void) ring_buffer_add( g_uart[uart_ch].rx_buf, &u8_data );
+                // Put to buffer
+                (void) ring_buffer_add( g_uart[uart_ch].rx_buf, &u8_data );
+            }
+
+            // 9 bit per frame
+            else
+            {
+                // Get received character
+                const uint16_t u16_data = g_uart[uart_ch].handle.Instance->RDR;
+                const uint8_t lsb_data = ( u16_data & 0xFFU );
+                const uint8_t msb_data = (( u16_data >> 8U ) & 0xFFU );
+
+                // Put to buffer
+                (void) ring_buffer_add( g_uart[uart_ch].rx_buf, &lsb_data );
+                (void) ring_buffer_add( g_uart[uart_ch].rx_buf, &msb_data );
+            }
         }
 
         // UART transmit data register empty
         else if( __HAL_UART_GET_FLAG( &g_uart[uart_ch].handle, UART_FLAG_TXE ))
         {
-            // Take data from Tx buffer and send it
-            if ( eRING_BUFFER_OK == ring_buffer_get( g_uart[uart_ch].tx_buf, &u8_data ))
+            // 8bit or 7bit per frame
+            if ( UART_WORDLENGTH_9B != g_uart[uart_ch].handle.Init.WordLength )
             {
-                g_uart[uart_ch].handle.Instance->TDR = u8_data;
+                // Take data from Tx buffer and send it
+                if ( eRING_BUFFER_OK == ring_buffer_get( g_uart[uart_ch].tx_buf, &u8_data ))
+                {
+                    g_uart[uart_ch].handle.Instance->TDR = u8_data;
+                }
+
+                // Tx FIFO empty -> stop TXE interrupt
+                else
+                {
+                    __HAL_UART_DISABLE_IT( &g_uart[uart_ch].handle, UART_IT_TXE );
+                }
             }
 
-            // Tx FIFO empty -> stop TXE interrupt
+            // 9 bit per frame
             else
             {
-                __HAL_UART_DISABLE_IT( &g_uart[uart_ch].handle, UART_IT_TXE );
+                uint8_t lsb_data, msb_data = 0;
+
+                // Take two bytes out of buffer
+                buf_status = ring_buffer_get( g_uart[uart_ch].tx_buf, &lsb_data );
+                buf_status |= ring_buffer_get( g_uart[uart_ch].tx_buf, &msb_data );
+
+                const uint16_t u16_data = (( msb_data << 8U ) | lsb_data );
+
+                // Take data from Tx buffer and send it
+                if ( eRING_BUFFER_OK == buf_status )
+                {
+                    g_uart[uart_ch].handle.Instance->TDR = u16_data;
+                }
+
+                // Tx FIFO empty -> stop TXE interrupt
+                else
+                {
+                    __HAL_UART_DISABLE_IT( &g_uart[uart_ch].handle, UART_IT_TXE );
+                }
             }
         }
 
@@ -806,6 +852,7 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
 {
     uart_status_t   status          = eUART_OK;
     uint32_t        buf_free_space  = 0U;
+    uint32_t        _size           = size;
 
     UART_ASSERT( uart_ch < eUART_CH_NUM_OF );
     UART_ASSERT( true == g_uart[uart_ch].is_init );
@@ -818,17 +865,23 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
             &&  ( NULL != p_data )
             &&  ( size <= UART_CFG_MTU ))
         {
-            // Enter critical
-            __disable_irq();
+            // Two bytes in case of 9bit per transfer
+            if ( UART_WORDLENGTH_9B == g_uart[uart_ch].handle.Init.WordLength )
+            {
+                _size = 2U * size;
+            }
 
             // Check if there is space in Tx FIFO
             (void) ring_buffer_get_free( g_uart[uart_ch].tx_buf, &buf_free_space );
 
+            // Enter critical
+            __disable_irq();
+
             // There is space in Tx FIFO for complete message
-            if ( size <= buf_free_space )
+            if ( _size <= buf_free_space )
             {
                 // Put all data to Tx FIFO
-                for ( uint32_t byte_idx = 0; byte_idx < size; byte_idx++ )
+                for ( uint32_t byte_idx = 0; byte_idx < _size; byte_idx++ )
                 {
                     (void) ring_buffer_add( g_uart[uart_ch].tx_buf, (uint8_t*) &p_data[byte_idx] );
                 }
@@ -874,7 +927,8 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
 ////////////////////////////////////////////////////////////////////////////////
 uart_status_t uart_receive_it(const uart_ch_t uart_ch, uint8_t * const p_data)
 {
-    uart_status_t status = eUART_OK;
+    uart_status_t           status      = eUART_OK;
+    ring_buffer_status_t    buf_status  = eRING_BUFFER_OK;
 
     UART_ASSERT( uart_ch < eUART_CH_NUM_OF );
     UART_ASSERT( true == g_uart[uart_ch].is_init );
@@ -885,10 +939,26 @@ uart_status_t uart_receive_it(const uart_ch_t uart_ch, uint8_t * const p_data)
         if  (   ( true == g_uart[uart_ch].is_init )
             &&  ( NULL != p_data ))
         {
-            // Get data from RX FIFO
-            if ( eRING_BUFFER_OK != ring_buffer_get( g_uart[uart_ch].rx_buf, (uint8_t*) p_data ))
+            // Two bytes in case of 9bit per transfer
+            if ( UART_WORDLENGTH_9B != g_uart[uart_ch].handle.Init.WordLength )
             {
-                status = eUART_WAR_EMPTY;
+                // Get data from RX FIFO
+                if ( eRING_BUFFER_OK != ring_buffer_get( g_uart[uart_ch].rx_buf, (uint8_t*) p_data ))
+                {
+                    status = eUART_WAR_EMPTY;
+                }
+            }
+
+            // 9bits per transfer
+            else
+            {
+                buf_status =  ring_buffer_get( g_uart[uart_ch].rx_buf, (uint8_t*) p_data );
+                buf_status |= ring_buffer_get( g_uart[uart_ch].rx_buf, (uint8_t*) ( p_data + 1U ));
+
+                if ( eRING_BUFFER_OK != buf_status )
+                {
+                    status = eUART_WAR_EMPTY;
+                }
             }
         }
         else
