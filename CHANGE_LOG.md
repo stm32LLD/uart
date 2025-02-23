@@ -12,8 +12,6 @@ and this project/module adheres to [Semantic Versioning](https://semver.org/spec
 - Implemented non-blocking FIFO based transmission/reception
 - Module setup via configuration file
 - Support for STM32L4 and STM32H7 microcontroller family
-
-### Todo
-- Testing needs to be done for STM32H7 device family
+- Added support for 9-bit per frame configuration
 
 ---

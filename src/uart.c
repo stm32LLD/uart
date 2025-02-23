@@ -74,7 +74,6 @@ static const ring_buffer_attr_t g_buf_attr =
  */
 static uart_ctrl_t g_uart[eUART_CH_NUM_OF] = {0};
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // Function prototypes
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +84,6 @@ static void             uart_init_gpio      (const uart_pin_cfg_t * const p_pin_
 static void             uart_deinit_gpio    (const uart_pin_cfg_t * const p_pin_cfg);
 static inline bool      uart_find_channel   (const USART_TypeDef * p_inst, uart_ch_t * const p_ch);
 static inline void      uart_process_isr    (const USART_TypeDef * p_inst);
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Functions
@@ -723,9 +721,8 @@ uart_status_t uart_is_init(const uart_ch_t uart_ch, bool * const p_is_init)
 *
 * @note     This function is blocking!
 *
-* @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
-*         the sent data is handled as a set of u16. In this case, Size must indicate the number
-*         of u16 provided through pData.
+* @note     When ".bits_per_frame = UART_WORDLENGTH_9B" the send data is handles as a set of uint16_t!
+*           Size must indicate the number of uin16_t provided through "p_data"!
 *
 * @param[in]    uart_ch     - UART communication channel
 * @param[in]    p_data      - Pointer to data to send
@@ -764,9 +761,6 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
         status = eUART_ERROR;
     }
 
-
-
-
     return status;
 }
 
@@ -778,6 +772,9 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
 *
 * @note     If timeout = 0, then this function is effectively non-blocking and
 *           it will return "ERROR_TIMEOUT"!
+*
+* @note     When ".bits_per_frame = UART_WORDLENGTH_9B" the send data is handles as a set of uint16_t!
+*           Size must indicate the number of uin16_t provided through "p_data"!
 *
 * @param[in]    uart_ch     - UART communication channel
 * @param[out]   p_data      - Pointer to data to send
@@ -838,9 +835,8 @@ uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, cons
 *           might be that message will not be transmitted as it currently
 *           cannot be fitted into Tx FIFO.
 *
-* @note   When UART parity is not enabled (PCE = 0), and Word Length is configured to 9 bits (M1-M0 = 01),
-*         the sent data is handled as a set of u16. In this case, Size must indicate the number
-*         of u16 provided through pData.
+* @note     When ".bits_per_frame = UART_WORDLENGTH_9B" the send data is handles as a set of uint16_t!
+*           Size must indicate the number of uin16_t provided through "p_data"!
 *
 * @param[in]    uart_ch     - UART communication channel
 * @param[in]    p_data      - Pointer to data to send
@@ -919,6 +915,9 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
 *
 * @note     This function is non-blocking!
 * @note     Function returns "eUART_WAR_EMPTY" when Rx FIFO is empty.
+*
+* @note     When ".bits_per_frame = UART_WORDLENGTH_9B" the send data is handles as a set of uint16_t!
+*           Size must indicate the number of uin16_t provided through "p_data"!
 *
 * @param[in]    uart_ch     - UART communication channel
 * @param[out]   p_data      - Pointer to data to send
