@@ -780,10 +780,11 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
 * @param[out]   p_data      - Pointer to data to send
 * @param[in]    size        - Amount of data bytes to be received
 * @param[in]    timeout     - Timeout in miliseconds
+* @param[in]    p_rbytes    - Number of received bytes
 * @return       status      - Status of operation
 */
 ////////////////////////////////////////////////////////////////////////////////
-uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, const uint32_t size, const uint32_t timeout)
+uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, const uint32_t size, const uint32_t timeout, uint32_t * const p_rbytes)
 {
     uart_status_t   status  = eUART_OK;
     uint32_t        rx_cnt  = 0;
@@ -798,24 +799,30 @@ uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, cons
         // Wait until all requested data are received
         while( rx_cnt < size )
         {
-            // Check for timeout
-            if (((uint32_t) ( UART_GET_SYSTICK() - now )) > timeout )
-            {
-                status = eUART_ERROR_TIMEOUT;
-                break;
-            }
-
             // Byte received?
             if ( eUART_OK == uart_receive_it( uart_ch, (uint8_t*) &p_data[rx_cnt] ))
             {
                 // Byte received
                 rx_cnt++;
             }
+
+            // Check for timeout
+            if (((uint32_t) ( UART_GET_SYSTICK() - now )) > timeout )
+            {
+                status = eUART_ERROR_TIMEOUT;
+                break;
+            }
         }
     }
     else
     {
         status = eUART_ERROR;
+    }
+
+    // Return number of received bytes
+    if ( NULL != p_rbytes )
+    {
+        *p_rbytes = rx_cnt;
     }
 
     return status;
@@ -870,9 +877,6 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
             // Check if there is space in Tx FIFO
             (void) ring_buffer_get_free( g_uart[uart_ch].tx_buf, &buf_free_space );
 
-            // Enter critical
-            __disable_irq();
-
             // There is space in Tx FIFO for complete message
             if ( _size <= buf_free_space )
             {
@@ -892,9 +896,6 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
             {
                 status = eUART_WAR_FULL;
             }
-
-            // Exit critical
-            __enable_irq();
         }
         else
         {

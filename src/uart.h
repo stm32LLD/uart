@@ -60,7 +60,7 @@ uart_status_t uart_init        	(const uart_ch_t uart_ch);
 uart_status_t uart_deinit      	(const uart_ch_t uart_ch);
 uart_status_t uart_is_init     	(const uart_ch_t uart_ch, bool * const p_is_init);
 uart_status_t uart_transmit     (const uart_ch_t uart_ch, const uint8_t * const p_data, const uint32_t size, const uint32_t timeout);
-uart_status_t uart_receive      (const uart_ch_t uart_ch, uint8_t * const p_data, const uint32_t size, const uint32_t timeout);
+uart_status_t uart_receive      (const uart_ch_t uart_ch, uint8_t * const p_data, const uint32_t size, const uint32_t timeout, uint32_t * const p_rbytes);
 uart_status_t uart_transmit_it 	(const uart_ch_t uart_ch, const uint8_t * const p_data, const uint32_t size);
 uart_status_t uart_receive_it  	(const uart_ch_t uart_ch, uint8_t * const p_data);
 uart_status_t uart_clear_rx_buf	(const uart_ch_t uart_ch);
