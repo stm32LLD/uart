@@ -29,7 +29,7 @@
 
 // USER INCLUDE BEGIN...
 
-#include "stm32g4xx_hal.h"
+#include "stm32h7xx_hal.h"
 #include "config/proj_cfg.h"
 
 // USER INCLUDE END...
@@ -88,7 +88,6 @@ typedef enum
     // USER CODE BEGIN...
 
     eUART_DBG = 0,      /**<Debug com port */
-    eUART_RS485,        /**<Communication with master over RS-485 */
 
     // USER CODE END...
 
@@ -113,6 +112,7 @@ typedef struct
 {
     USART_TypeDef *     p_instance;     /**<UART instance */
     uint32_t            baudrate;       /**<Baudrate */
+    uint32_t            bits_per_frame; /**<Number of bits per frame */
     uint16_t            tx_buf_size;    /**<Transmission buffer size in bytes */
     uint16_t            rx_buf_size;    /**<Reception buffer size in bytes */
     uart_pin_cfg_t      tx_pin;         /**<Tx pin config */
