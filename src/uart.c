@@ -40,9 +40,9 @@
 /**
  *  Compatibility check with RING_BUFFER
  *
- *  Support version V2.x.x
+ *  Support version V3.x.x
  */
-_Static_assert( 2 == RING_BUFFER_VER_MAJOR );
+_Static_assert( 3 == RING_BUFFER_VER_MAJOR );
 
 /**
  *  UART control
@@ -853,9 +853,8 @@ uart_status_t uart_receive(const uart_ch_t uart_ch, uint8_t * const p_data, cons
 ////////////////////////////////////////////////////////////////////////////////
 uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_data, const uint32_t size)
 {
-    uart_status_t   status          = eUART_OK;
-    uint32_t        buf_free_space  = 0U;
-    uint32_t        _size           = size;
+    uart_status_t status = eUART_OK;
+    uint32_t      _size  = size;
 
     UART_ASSERT( uart_ch < eUART_CH_NUM_OF );
     UART_ASSERT( true == g_uart[uart_ch].is_init );
@@ -874,11 +873,8 @@ uart_status_t uart_transmit_it(const uart_ch_t uart_ch, const uint8_t * const p_
                 _size = 2U * size;
             }
 
-            // Check if there is space in Tx FIFO
-            (void) ring_buffer_get_free( g_uart[uart_ch].tx_buf, &buf_free_space );
-
             // There is space in Tx FIFO for complete message
-            if ( _size <= buf_free_space )
+            if ( _size <= ring_buffer_get_free( g_uart[uart_ch].tx_buf ))
             {
                 // Put all data to Tx FIFO
                 for ( uint32_t byte_idx = 0; byte_idx < _size; byte_idx++ )
