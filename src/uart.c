@@ -764,6 +764,13 @@ uart_status_t uart_transmit(const uart_ch_t uart_ch, const uint8_t * const p_dat
     return status;
 }
 
+#include <string.h>
+void uart_transmit_str(const uart_ch_t uart_ch, const char * str)
+{
+    (void) uart_transmit_it(uart_ch, (uint8_t*) str, strlen(str));
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 /*!
 * @brief        Received data over UART

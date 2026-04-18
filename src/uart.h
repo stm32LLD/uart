@@ -66,6 +66,8 @@ uart_status_t uart_receive_it  	(const uart_ch_t uart_ch, uint8_t * const p_data
 uart_status_t uart_clear_rx_buf	(const uart_ch_t uart_ch);
 uart_status_t uart_clear_tx_buf	(const uart_ch_t uart_ch);
 
+void uart_transmit_str(const uart_ch_t uart_ch, const char * str);
+
 #endif // __UART_H
 
 ////////////////////////////////////////////////////////////////////////////////
